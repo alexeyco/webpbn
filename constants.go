@@ -2,10 +2,7 @@ package webpbn
 
 type PuzzleType string
 
-const (
-	PuzzleGrid     PuzzleType = "grid"
-	PuzzleTriddler PuzzleType = "triddler"
-)
+const PuzzleGrid PuzzleType = "grid"
 
 type ClueType string
 
