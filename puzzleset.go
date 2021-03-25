@@ -1,25 +1,19 @@
 package webpbn
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"fmt"
+	"strings"
+)
 
 type PuzzleSet struct {
 	XMLName xml.Name `xml:"puzzleset"`
 	Puzzles []Puzzle `xml:"puzzle"`
 }
 
-func (s PuzzleSet) Validate() error {
-	for _, p := range s.Puzzles {
-		if err := p.Validate(); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 type Puzzle struct {
 	Type            PuzzleType `xml:"type,attr"`
-	DefaultColor    string     `xml:"defaultcolor,attr"`
+	DefaultColor    string     `xml:"defaultcolor,attr,omitempty"`
 	BackgroundColor string     `xml:"backgroundcolor,attr,omitempty"`
 	Source          string     `xml:"source,omitempty"`
 	ID              string     `xml:"id,omitempty"`
@@ -49,10 +43,6 @@ func (p Puzzle) Size() (int, int) {
 	return columns, rows
 }
 
-func (p Puzzle) Validate() error {
-	return nil
-}
-
 type Colors []Color
 
 func (c Colors) GetByName(name string) (*Color, bool) {
@@ -65,7 +55,7 @@ func (c Colors) GetByName(name string) (*Color, bool) {
 	return nil, false
 }
 
-func (c Colors) GetByChar(char string) (*Color, bool) {
+func (c Colors) GetByChar(char Char) (*Color, bool) {
 	for _, color := range c {
 		if color.Char == char {
 			return &color, true
@@ -77,8 +67,20 @@ func (c Colors) GetByChar(char string) (*Color, bool) {
 
 type Color struct {
 	Name string `xml:"name,attr"`
-	Char string `xml:"char,attr"`
+	Char Char   `xml:"char,attr"`
 	Hex  string `xml:",chardata"`
+}
+
+type Char rune
+
+func (c Char) MarshalText() ([]byte, error) {
+	return []byte(string(c)), nil
+}
+
+func (c Char) UnmarshalText(text []byte) error {
+	text = []byte(string(c))
+
+	return nil
 }
 
 type Clues []Clue
@@ -108,9 +110,46 @@ type Count struct {
 }
 
 type Solution struct {
-	Type  SolutionType `xml:"type"`
+	Type  SolutionType `xml:"type,attr"`
 	Image Image        `xml:"image"`
 }
 
-type Image struct {
+type Image [][]Char
+
+func (i Image) MarshalText() (b []byte, err error) {
+	if len(i) == 0 {
+		return
+	}
+
+	lines := make([]string, len(i))
+	for n, chars := range i {
+		line := make([]rune, len(chars))
+		for x, r := range chars {
+			line[x] = rune(r)
+		}
+
+		lines[n] = fmt.Sprintf("|%s|", string(line))
+	}
+
+	return []byte(strings.Join(lines, "")), nil
+}
+
+func (i Image) UnmarshalText(text []byte) error {
+	txt := strings.TrimSpace(string(text))
+	txt = strings.Replace(txt, "||", "|\n|", -1)
+
+	lines := strings.Split(txt, "\n")
+	i = make([][]Char, len(lines))
+
+	for n, line := range lines {
+		line = strings.Trim(line, "|")
+		runes := []rune(line)
+
+		i[n] = make([]Char, len(runes))
+		for m, r := range runes {
+			i[n][m] = Char(r)
+		}
+	}
+
+	return nil
 }

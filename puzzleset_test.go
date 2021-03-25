@@ -9,12 +9,12 @@ import (
 var colors = webpbn.Colors{
 	{
 		Name: "white",
-		Char: ".",
+		Char: '.',
 		Hex:  "fff",
 	},
 	{
 		Name: "black",
-		Char: "x",
+		Char: 'x',
 		Hex:  "000",
 	},
 }
@@ -34,8 +34,8 @@ func TestColors_GetByName(t *testing.T) {
 			t.Errorf(`Should be "white", "%s" given`, color.Name)
 		}
 
-		if color.Char != "." {
-			t.Errorf(`Should be ".", "%s" given`, color.Char)
+		if color.Char != '.' {
+			t.Errorf(`Should be ".", "%s" given`, string(color.Char))
 		}
 
 		if color.Hex != "fff" {
@@ -63,7 +63,7 @@ func TestColors_GetByChar(t *testing.T) {
 	t.Run("Exists", func(t *testing.T) {
 		t.Parallel()
 
-		color, ok := colors.GetByChar("x")
+		color, ok := colors.GetByChar('x')
 		if !ok {
 			t.Error(`Should be true`)
 		}
@@ -72,8 +72,8 @@ func TestColors_GetByChar(t *testing.T) {
 			t.Errorf(`Should be "black", "%s" given`, color.Name)
 		}
 
-		if color.Char != "x" {
-			t.Errorf(`Should be "x", "%s" given`, color.Char)
+		if color.Char != 'x' {
+			t.Errorf(`Should be "x", "%s" given`, string(color.Char))
 		}
 
 		if color.Hex != "000" {
@@ -84,7 +84,7 @@ func TestColors_GetByChar(t *testing.T) {
 	t.Run("DoesNotExist", func(t *testing.T) {
 		t.Parallel()
 
-		color, ok := colors.GetByChar("-")
+		color, ok := colors.GetByChar('-')
 		if ok {
 			t.Error(`Should be false`)
 		}
