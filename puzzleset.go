@@ -1,41 +1,44 @@
 package webpbn
 
-type Doc struct {
-	Puzzleset Puzzleset `xml:"puzzleset"`
-}
+import "encoding/xml"
 
-type Puzzleset struct {
+type PuzzleSet struct {
+	XMLName xml.Name `xml:"puzzleset"`
 	Puzzles []Puzzle `xml:"puzzle"`
 }
 
 type Puzzle struct {
-	Type            PuzzleType `xml:"type"`
-	DefaultColor    string     `xml:"defaultcolor"`
-	BackgroundColor string     `xml:"backgroundcolor"`
-	Source          string     `xml:"source"`
-	ID              string     `xml:"id"`
-	Author          string     `xml:"author"`
-	AuthorID        string     `xml:"authorid"`
-	Copyright       string     `xml:"copyright"`
-	Description     string     `xml:"description"`
+	Type            PuzzleType `xml:"type,attr"`
+	DefaultColor    string     `xml:"defaultcolor,attr"`
+	BackgroundColor string     `xml:"backgroundcolor,attr,omitempty"`
+	Source          string     `xml:"source,omitempty"`
+	ID              string     `xml:"id,omitempty"`
+	Author          string     `xml:"author,omitempty"`
+	AuthorID        string     `xml:"authorid,omitempty"`
+	Copyright       string     `xml:"copyright,omitempty"`
+	Description     string     `xml:"description,omitempty"`
 	Colors          []Color    `xml:"color"`
 	Clues           []Clue     `xml:"clues"`
 	Solution        Solution   `xml:"solution"`
 }
 
 type Color struct {
-	Name string `xml:"name"`
-	Char string `xml:"char"`
-	Hex  string `xml:"hex"`
+	Name string `xml:"name,attr"`
+	Char string `xml:"char,attr"`
+	Hex  string `xml:",chardata"`
 }
 
 type Clue struct {
-	Type  ClueType `xml:"type"`
+	Type  ClueType `xml:"type,attr"`
 	Lines []Line   `xml:"line"`
 }
 
 type Line struct {
-	Counts []int `xml:"count"`
+	Counts []Count `xml:"count"`
+}
+
+type Count struct {
+	Count int `xml:",chardata"`
 }
 
 type Solution struct {

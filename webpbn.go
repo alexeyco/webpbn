@@ -1,15 +1,23 @@
 package webpbn
 
 import (
+	"encoding/xml"
 	"io"
 	"os"
 )
 
-func Parse(r io.Reader) (*Doc, error) {
-	return nil, nil
+// Parse puzzleset from reader.
+func Parse(r io.Reader) (*PuzzleSet, error) {
+	var puzzleSet PuzzleSet
+	if err := xml.NewDecoder(r).Decode(&puzzleSet); err != nil {
+		return nil, err
+	}
+
+	return &puzzleSet, nil
 }
 
-func ParseFile(name string) (*Doc, error) {
+// ParseFile loads puzzleset from file by name.
+func ParseFile(name string) (*PuzzleSet, error) {
 	file, err := os.Open(name)
 	if err != nil {
 		return nil, err
