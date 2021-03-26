@@ -1,9 +1,10 @@
-package webpbn
+package ast
 
 import (
 	"encoding/xml"
 	"fmt"
 	"strings"
+	"unicode/utf8"
 )
 
 type PuzzleSet struct {
@@ -24,23 +25,6 @@ type Puzzle struct {
 	Colors          Colors     `xml:"color"`
 	Clues           Clues      `xml:"clues"`
 	Solution        *Solution  `xml:"solution,omitempty"`
-}
-
-func (p Puzzle) Size() (int, int) {
-	var (
-		columns int
-		rows    int
-	)
-
-	if clue, ok := p.Clues.GetByType(ClueColumns); ok {
-		columns = len(clue.Lines)
-	}
-
-	if clue, ok := p.Clues.GetByType(ClueRows); ok {
-		rows = len(clue.Lines)
-	}
-
-	return columns, rows
 }
 
 type Colors []Color
@@ -77,8 +61,18 @@ func (c Char) MarshalText() ([]byte, error) {
 	return []byte(string(c)), nil
 }
 
-func (c Char) UnmarshalText(text []byte) error {
-	text = []byte(string(c))
+func (c *Char) UnmarshalText(b []byte) error {
+	cnt := utf8.RuneCount(b)
+	if cnt == 0 {
+		return fmt.Errorf(`%w empty string: should be a single char`, ErrUnmarshal)
+	}
+
+	if cnt > 1 {
+		return fmt.Errorf(`%w "%s": should be a single char`, ErrUnmarshal, string(b))
+	}
+
+	r, _ := utf8.DecodeRune(b)
+	*c = Char(r)
 
 	return nil
 }
@@ -134,22 +128,24 @@ func (i Image) MarshalText() (b []byte, err error) {
 	return []byte(strings.Join(lines, "")), nil
 }
 
-func (i Image) UnmarshalText(text []byte) error {
+func (i *Image) UnmarshalText(text []byte) error {
 	txt := strings.TrimSpace(string(text))
 	txt = strings.Replace(txt, "||", "|\n|", -1)
 
 	lines := strings.Split(txt, "\n")
-	i = make([][]Char, len(lines))
+	img := make([][]Char, len(lines))
 
 	for n, line := range lines {
 		line = strings.Trim(line, "|")
 		runes := []rune(line)
 
-		i[n] = make([]Char, len(runes))
+		img[n] = make([]Char, len(runes))
 		for m, r := range runes {
-			i[n][m] = Char(r)
+			img[n][m] = Char(r)
 		}
 	}
+
+	*i = img
 
 	return nil
 }

@@ -4,11 +4,17 @@ import (
 	"encoding/xml"
 	"io"
 	"os"
+
+	"github.com/alexeyco/webpbn/ast"
 )
 
-// Parse puzzleset from reader.
-func Parse(r io.Reader) (*PuzzleSet, error) {
-	var puzzleSet PuzzleSet
+type Validator interface {
+	Validate(puzzleSet *ast.PuzzleSet) error
+}
+
+// Parse puzzle set from reader.
+func Parse(r io.Reader, options ...Option) (*ast.PuzzleSet, error) {
+	var puzzleSet ast.PuzzleSet
 	if err := xml.NewDecoder(r).Decode(&puzzleSet); err != nil {
 		return nil, err
 	}
@@ -16,8 +22,8 @@ func Parse(r io.Reader) (*PuzzleSet, error) {
 	return &puzzleSet, nil
 }
 
-// ParseFile loads puzzleset from file by name.
-func ParseFile(name string) (*PuzzleSet, error) {
+// ParseFile loads puzzle set from file by name.
+func ParseFile(name string, options ...Option) (*ast.PuzzleSet, error) {
 	file, err := os.Open(name)
 	if err != nil {
 		return nil, err
@@ -27,5 +33,5 @@ func ParseFile(name string) (*PuzzleSet, error) {
 		_ = file.Close()
 	}()
 
-	return Parse(file)
+	return Parse(file, options...)
 }
