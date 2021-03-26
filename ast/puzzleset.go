@@ -7,11 +7,13 @@ import (
 	"unicode/utf8"
 )
 
+// PuzzleSet the root structure of the document. Includes all puzzles.
 type PuzzleSet struct {
 	XMLName xml.Name `xml:"puzzleset"`
 	Puzzles []Puzzle `xml:"puzzle"`
 }
 
+// Puzzle a puzzle in the set of puzzles.
 type Puzzle struct {
 	Type            PuzzleType `xml:"type,attr"`
 	DefaultColor    string     `xml:"defaultcolor,attr,omitempty"`
@@ -27,8 +29,10 @@ type Puzzle struct {
 	Solution        *Solution  `xml:"solution,omitempty"`
 }
 
+// Colors collection of colors.
 type Colors []Color
 
+// GetByName returns a color from the collection by his name.
 func (c Colors) GetByName(name string) (*Color, bool) {
 	for _, color := range c {
 		if color.Name == name {
@@ -39,6 +43,7 @@ func (c Colors) GetByName(name string) (*Color, bool) {
 	return nil, false
 }
 
+// GetByChar returns a color from the collection by his character.
 func (c Colors) GetByChar(char Char) (*Color, bool) {
 	for _, color := range c {
 		if color.Char == char {
@@ -49,18 +54,22 @@ func (c Colors) GetByChar(char Char) (*Color, bool) {
 	return nil, false
 }
 
+// Color defines a color name used in the puzzle.
 type Color struct {
 	Name string `xml:"name,attr"`
 	Char Char   `xml:"char,attr"`
 	Hex  string `xml:",chardata"`
 }
 
+// Char defines a color unique character.
 type Char rune
 
+// MarshalText encodes the character into UTF-8-encoded text and returns the result.
 func (c Char) MarshalText() ([]byte, error) {
 	return []byte(string(c)), nil
 }
 
+// UnmarshalText decodes the character from UTF-8-encoded text.
 func (c *Char) UnmarshalText(b []byte) error {
 	cnt := utf8.RuneCount(b)
 	if cnt == 0 {
@@ -77,8 +86,10 @@ func (c *Char) UnmarshalText(b []byte) error {
 	return nil
 }
 
+// Clues collection of clues.
 type Clues []Clue
 
+// GetByType returns a clue by his type.
 func (c Clues) GetByType(t ClueType) (*Clue, bool) {
 	for _, clue := range c {
 		if clue.Type == t {
@@ -89,33 +100,40 @@ func (c Clues) GetByType(t ClueType) (*Clue, bool) {
 	return nil, false
 }
 
+// Clue defines a clue used in the puzzle.
 type Clue struct {
 	Type  ClueType `xml:"type,attr"`
 	Lines []Line   `xml:"line"`
 }
 
+// Line defines clue line.
 type Line struct {
 	Counts []Count `xml:"count"`
 }
 
+// Count defines line counts.
 type Count struct {
 	Count int    `xml:",chardata"`
 	Color string `xml:"color,attr,omitempty"`
 }
 
+// Solution defines puzzle solution.
 type Solution struct {
 	Type  SolutionType `xml:"type,attr"`
 	Image Image        `xml:"image"`
 }
 
+// Image defines solution image.
 type Image [][]Char
 
+// MarshalText encodes the image into UTF-8-encoded text and returns the result.
 func (i Image) MarshalText() (b []byte, err error) {
 	if len(i) == 0 {
 		return
 	}
 
 	lines := make([]string, len(i))
+
 	for n, chars := range i {
 		line := make([]rune, len(chars))
 		for x, r := range chars {
@@ -128,9 +146,10 @@ func (i Image) MarshalText() (b []byte, err error) {
 	return []byte(strings.Join(lines, "")), nil
 }
 
+// UnmarshalText decodes the image from UTF-8-encoded text.
 func (i *Image) UnmarshalText(text []byte) error {
 	txt := strings.TrimSpace(string(text))
-	txt = strings.Replace(txt, "||", "|\n|", -1)
+	txt = strings.ReplaceAll(txt, "||", "|\n|")
 
 	lines := strings.Split(txt, "\n")
 	img := make([][]Char, len(lines))
